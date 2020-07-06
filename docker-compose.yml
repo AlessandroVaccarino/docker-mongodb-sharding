@@ -1,0 +1,87 @@
+version: '2'
+services:
+  # Shard Node 1
+  mongorshard1node1:
+    container_name: mongorshard1node1
+    image: mongo
+    command: mongod --shardsvr --replSet mongorshard1 --dbpath /data/db --port 27017
+    ports:
+      - 27017:27017
+    expose:
+      - "27017"
+    volumes:
+      - ./mongoData/shard1/node1:/data/db
+  # Shard Node 2
+  mongorshard1node2:
+    container_name: mongorshard1node2
+    image: mongo
+    command: mongod --shardsvr --replSet mongorshard1 --dbpath /data/db --port 27017
+    ports:
+      - 27027:27017
+    expose:
+      - "27017"
+    volumes:
+      - ./mongoData/shard1/node2:/data/db
+  # Shard Node 3
+  mongorshard1node3:
+    container_name: mongorshard1node3
+    image: mongo
+    command: mongod --shardsvr --replSet mongorshard1 --dbpath /data/db --port 27017
+    ports:
+      - 27037:27017
+    expose:
+      - "27017"
+    volumes:
+      - ./mongoData/shard1/node3:/data/db
+  # Conf Node 1
+  mongoConfNode1:
+    container_name: mongoConfNode1
+    image: mongo
+    command: mongod --configsvr --replSet mongoConfShard1 --dbpath /data/db --port 27017
+    expose:
+      - "27017"
+    volumes:
+      - ./mongoData/shard1/config1:/data/db
+  # Conf Node 2
+  mongoConfNode2:
+    container_name: mongoConfNode2
+    image: mongo
+    command: mongod --configsvr --replSet mongoConfShard1 --dbpath /data/db --port 27017
+    expose:
+      - "27017"
+    volumes:
+      - ./mongoData/shard1/config2:/data/db
+  # Conf Node 3
+  mongoConfNode3:
+    container_name: mongoConfNode3
+    image: mongo
+    command: mongod --configsvr --replSet mongoConfShard1 --dbpath /data/db --port 27017
+    expose:
+      - "27017"
+    volumes:
+      - ./mongoData/shard1/config3:/data/db
+  # Mongos Node 1
+  mongosNode1:
+    container_name: mongosNode1
+    image: mongo
+    depends_on:
+      - mongoConfNode1
+      - mongoConfNode2
+      - mongoConfNode3
+    command: mongos --configdb mongoConfShard1/mongoConfNode1:27017,mongoConfNode2:27017,mongocfg3:27017 --port 27017
+    ports:
+      - 27019:27017
+    expose:
+      - "27017"
+  # Mongos Node 2
+  mongosNode2:
+    container_name: mongosNode2
+    image: mongo
+    depends_on:
+      - mongoConfNode1
+      - mongoConfNode2
+    command: mongos --configdb mongoConfShard1/mongoConfNode1:27017,mongoConfNode2:27017,mongocfg3:27017 --port 27017
+    ports:
+      - 27020:27017
+    expose:
+      - "27017"
